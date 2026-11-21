@@ -8,7 +8,7 @@ makedocs(;
     authors="Jan Kuhfeld <jankuhfeld@plasma-matters.nl> and contributors",
     sitename="FittingUtils.jl",
     format=Documenter.HTML(;
-        canonical="https://jqfeld.github.io/FittingUtils.jl",
+        canonical="https://optical-diagnostics.github.io/FittingUtils.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -18,6 +18,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/jqfeld/FittingUtils.jl",
+    repo="github.com/Optical-Diagnostics/FittingUtils.jl",
     devbranch="main",
 )
