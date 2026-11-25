@@ -1,9 +1,9 @@
-# FittingUtils
+# BayesFitting
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://optical-diagnostics.github.io/FittingUtils.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://optical-diagnostics.github.io/FittingUtils.jl/dev/)
-[![Build Status](https://github.com/Optical-Diagnostics/FittingUtils.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/Optical-Diagnostics/FittingUtils.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/Optical-Diagnostics/FittingUtils.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/Optical-Diagnostics/FittingUtils.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://optical-diagnostics.github.io/BayesFitting.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://optical-diagnostics.github.io/BayesFitting.jl/dev/)
+[![Build Status](https://github.com/Optical-Diagnostics/BayesFitting.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/Optical-Diagnostics/BayesFitting.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/Optical-Diagnostics/BayesFitting.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/Optical-Diagnostics/BayesFitting.jl)
 [![Aqua](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
 Parameter fitting with priors: least-squares (`LevenbergMarquardtFit`, via
@@ -17,7 +17,7 @@ coordinate.
 ## Example
 
 ```julia
-using FittingUtils, NonlinearSolve, ComponentArrays, Distributions
+using BayesFitting, NonlinearSolve, ComponentArrays, Distributions
 
 model(x, θ) = @. θ.ampl * exp(-x^2 / (2 * θ.width^2)) + θ.bg
 x = range(-3, 3, length = 200)

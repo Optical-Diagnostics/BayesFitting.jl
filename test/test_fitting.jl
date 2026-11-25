@@ -1,5 +1,5 @@
 using Test
-using FittingUtils
+using BayesFitting
 using NonlinearSolve, Turing
 using ComponentArrays
 using Distributions
@@ -40,8 +40,8 @@ end
 g1 = gaussian.(xs, 1.0)
 X = [g1 ones(length(xs))]
 
-nls_ext = Base.get_extension(FittingUtils, :FittingUtilsNonlinearSolveExt)
-turing_ext = Base.get_extension(FittingUtils, :FittingUtilsTuringExt)
+nls_ext = Base.get_extension(BayesFitting, :BayesFittingNonlinearSolveExt)
+turing_ext = Base.get_extension(BayesFitting, :BayesFittingTuringExt)
 
 priors = ComponentVector(ampl = Normal(1, 1), bg = Normal(1, 1))
 plain_params = ComponentVector(ampl = 1.0, bg = 1.0)
@@ -305,7 +305,7 @@ end
 @testset "init for least squares" begin
     init_cv = ComponentVector(ampl = 1.7, bg = 0.4)
     prob_init = nls_ext.create_nonlinear_problem(model, xs, data, priors; init = init_cv)
-    @test prob_init.u0 ≈ FittingUtils.scaled(ParameterScaling(priors), init_cv)
+    @test prob_init.u0 ≈ BayesFitting.scaled(ParameterScaling(priors), init_cv)
 
     initres = fit_model(model, xs, data, priors, LevenbergMarquardtFit(); init = init_cv)
     @test mean(initres[:ampl]) ≈ mean(lmres[:ampl]) rtol = 1.0e-6
@@ -456,32 +456,32 @@ struct NoDrift <: DriftModel end
     pinpriors = ComponentVector(ampl = Normal(1, 0.5), width = Dirac(1.0), bg = Normal(1, 0.5))
     @test_throws ErrorException fit_series(smodel, ts[1:2], sxs, sdatas[1:2], pinpriors,
         LevenbergMarquardtFit(); drift = sdrift, track = Tracked(:width))
-    @test sort(FittingUtils._tracked_keys(Tracked(:ampl), spriors)) ==
-          sort(setdiff(FittingUtils._tracked_keys(nothing, spriors),
-                       FittingUtils._tracked_keys(NotTracked(:ampl), spriors)))
+    @test sort(BayesFitting._tracked_keys(Tracked(:ampl), spriors)) ==
+          sort(setdiff(BayesFitting._tracked_keys(nothing, spriors),
+                       BayesFitting._tracked_keys(NotTracked(:ampl), spriors)))
 end
 
 @testset "GP drift against the closed form" begin
     μ0, σ0, ℓ = 2.0, 0.5, 2.0
     gd = GaussianDrift(lengthscale = ℓ, kernel = with_lengthscale(SqExponentialKernel(), ℓ))
-    gstate = FittingUtils.init_drift(gd, [:a], ComponentVector(a = Normal(μ0, σ0)))
+    gstate = BayesFitting.init_drift(gd, [:a], ComponentVector(a = Normal(μ0, σ0)))
     t1, y1, σobs = 1.0, 2.4, 0.1
-    FittingUtils.drift_update!(gstate, :a, t1, y1, σobs)
+    BayesFitting.drift_update!(gstate, :a, t1, y1, σobs)
     t2 = 2.0
     kk = exp(-(t2 - t1)^2 / (2ℓ^2))
     n1 = (gd.noise_inflation * σobs)^2
     μref = μ0 + σ0^2 * kk * (y1 - μ0) / (σ0^2 + n1)
     σref = sqrt(σ0^2 * (1 - σ0^2 * kk^2 / (σ0^2 + n1)))
-    μp, σp = FittingUtils.drift_predict(gstate, :a, t2)
+    μp, σp = BayesFitting.drift_predict(gstate, :a, t2)
     @test μp ≈ μref rtol = 1.0e-10
     @test σp ≈ σref rtol = 1.0e-10
 
     gd1 = GaussianDrift(lengthscale = ℓ, kernel = with_lengthscale(SqExponentialKernel(), ℓ),
         window = 1)
-    g1s = FittingUtils.init_drift(gd1, [:a], ComponentVector(a = Normal(μ0, σ0)))
-    FittingUtils.drift_update!(g1s, :a, 0.0, 5.0, σobs)   # to be forgotten
-    FittingUtils.drift_update!(g1s, :a, t1, y1, σobs)
-    μw, σw = FittingUtils.drift_predict(g1s, :a, t2)
+    g1s = BayesFitting.init_drift(gd1, [:a], ComponentVector(a = Normal(μ0, σ0)))
+    BayesFitting.drift_update!(g1s, :a, 0.0, 5.0, σobs)   # to be forgotten
+    BayesFitting.drift_update!(g1s, :a, t1, y1, σobs)
+    μw, σw = BayesFitting.drift_predict(g1s, :a, t2)
     @test μw ≈ μref rtol = 1.0e-10
     @test σw ≈ σref rtol = 1.0e-10
 end
@@ -515,8 +515,8 @@ end
     @test std(stres[5][:ampl]) ≈ std(indep5[:ampl]) rtol = 1.0e-4
 
     boxpriors = ComponentVector(ampl = Uniform(0.0, 5.0), width = Normal(1, 0.5), bg = Normal(1, 0.5))
-    ststate = FittingUtils.init_drift(StaticDrift(), [:ampl, :width], boxpriors)
-    @test FittingUtils.drift_prior(ststate, :ampl, 1.0, boxpriors.ampl) === boxpriors.ampl
+    ststate = BayesFitting.init_drift(StaticDrift(), [:ampl, :width], boxpriors)
+    @test BayesFitting.drift_prior(ststate, :ampl, 1.0, boxpriors.ampl) === boxpriors.ampl
     stbox = fit_series(smodel, ts[1:2], sxs, sdatas[1:2], boxpriors, LevenbergMarquardtFit())
     indep2 = fit_model(smodel, sxs, sdatas[2], boxpriors, LevenbergMarquardtFit())
     @test collect(coef(stbox[2])) ≈ collect(coef(indep2)) rtol = 1.0e-6
@@ -527,11 +527,11 @@ end
                                 c = [Normal(0.0, 1e-3), Normal(0.0, 1e-3)])
     ps = ParameterScaling(sc_priors)
     θ = ComponentVector(a = 3.0, b = 1.0, c = [0.01, -0.02])
-    z = FittingUtils.scaled(ps, θ)
+    z = BayesFitting.scaled(ps, θ)
     @test z ≈ [2.0, 0.0, 10.0, -20.0]
-    @test FittingUtils.unscaled(ps, z) ≈ collect(θ)
-    @test FittingUtils.unscaled(ps, [5.0, 7.0, 0.0, 0.0])[2] == 1.0
-    @test FittingUtils.unscaled_cov(ps, [1.0 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]) ≈
+    @test BayesFitting.unscaled(ps, z) ≈ collect(θ)
+    @test BayesFitting.unscaled(ps, [5.0, 7.0, 0.0, 0.0])[2] == 1.0
+    @test BayesFitting.unscaled_cov(ps, [1.0 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]) ≈
           [0.25 0 0 0; 0 0 0 0; 0 0 1e-6 0; 0 0 0 1e-6]
 
     ps2 = ParameterScaling(sc_priors; scale = (; a = 10.0, c = [1.0, 1.0]))
@@ -606,9 +606,9 @@ end
     catch e
         e
     end
-    @test FittingUtils._code_error(failed)
-    @test FittingUtils._code_error(CompositeException([failed]))
-    @test !FittingUtils._code_error(ArgumentError("bad frame"))
+    @test BayesFitting._code_error(failed)
+    @test BayesFitting._code_error(CompositeException([failed]))
+    @test !BayesFitting._code_error(ArgumentError("bad frame"))
 end
 
 @testset "init from a FitResult; GP noise floor" begin
@@ -619,10 +619,10 @@ end
 
     # The GP drift's noise floor scales with the prior variance. A zero-σ
     # observation of a parameter of size 1e-8 must pin the prediction there.
-    gs = FittingUtils.init_drift(GaussianDrift(lengthscale = 5.0), [:a],
+    gs = BayesFitting.init_drift(GaussianDrift(lengthscale = 5.0), [:a],
         ComponentVector(a = Normal(1.0e-8, 1.0e-9)))
-    FittingUtils.drift_update!(gs, :a, 0.0, 1.2e-8, 0.0)
-    μs, σs = FittingUtils.drift_predict(gs, :a, 0.0)
+    BayesFitting.drift_update!(gs, :a, 0.0, 1.2e-8, 0.0)
+    μs, σs = BayesFitting.drift_predict(gs, :a, 0.0)
     @test μs ≈ 1.2e-8 rtol = 1e-3
     @test σs < 1.0e-12
 end
@@ -667,7 +667,7 @@ end
     # must still be found, one element at a time.
     mixed = ComponentVector(a = 1.0, b = [Normal(0, 1.0e-6), Normal(0, 1.0e-6)],
         c = (x = Uniform(0, 1), y = 2.0))
-    dists, index = FittingUtils.flatten_priors(mixed)
+    dists, index = BayesFitting.flatten_priors(mixed)
     @test index == [2, 3, 4]
     @test dists[3] == Uniform(0, 1)
 
@@ -689,9 +689,9 @@ end
     yl, σl = 3.0, 0.5
     pp = 1 / σl^2 + 1 / prior.σ^2
     μpost = (yl / σl^2 + prior.μ / prior.σ^2) / pp
-    μb, σb = FittingUtils._likelihood_only(μpost, 1 / sqrt(pp), prior)
+    μb, σb = BayesFitting._likelihood_only(μpost, 1 / sqrt(pp), prior)
     @test μb ≈ yl && σb ≈ σl
-    @test FittingUtils._likelihood_only(1.3, 2.0, prior)[2] > 1.0e5 * prior.σ
+    @test BayesFitting._likelihood_only(1.3, 2.0, prior)[2] > 1.0e5 * prior.σ
 
     # Constant truth and a drift far slower than the series: the filter must
     # reproduce the pooled estimate.
@@ -708,9 +708,9 @@ end
 @testset "GP drift keeps non-Normal priors" begin
     boxpriors = ComponentVector(ampl = Uniform(0.0, 5.0), width = Normal(1, 0.5), bg = Normal(1, 0.5))
     gd = GaussianDrift(lengthscale = 6.0)
-    @test FittingUtils._tracked_keys(nothing, boxpriors, gd) == [:width, :bg]
-    @test FittingUtils._tracked_keys(NotTracked(:bg), boxpriors, gd) == [:width]
-    @test FittingUtils._tracked_keys(nothing, boxpriors, StaticDrift()) == [:ampl, :width, :bg]
+    @test BayesFitting._tracked_keys(nothing, boxpriors, gd) == [:width, :bg]
+    @test BayesFitting._tracked_keys(NotTracked(:bg), boxpriors, gd) == [:width]
+    @test BayesFitting._tracked_keys(nothing, boxpriors, StaticDrift()) == [:ampl, :width, :bg]
     @test_throws ErrorException fit_series(smodel, ts[1:2], sxs, sdatas[1:2], boxpriors,
         LevenbergMarquardtFit(); drift = gd, track = Tracked(:ampl))
     tightbox = ComponentVector(ampl = Uniform(0.0, 0.5), width = Normal(1, 0.5), bg = Normal(1, 0.5))
@@ -749,6 +749,6 @@ end
         per_frame_inputs = false)
     @test all(converged(gr))
 
-    @test FittingUtils._pm_string(12345.678, 123.4) == "12350.0 ± 120.0"
-    @test FittingUtils._pm_string(1.23456, 0.0123) == "1.235 ± 0.012"
+    @test BayesFitting._pm_string(12345.678, 123.4) == "12350.0 ± 120.0"
+    @test BayesFitting._pm_string(1.23456, 0.0123) == "1.235 ± 0.012"
 end

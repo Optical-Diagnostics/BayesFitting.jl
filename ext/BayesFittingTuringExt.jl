@@ -1,8 +1,8 @@
-module FittingUtilsTuringExt
+module BayesFittingTuringExt
 
-using FittingUtils, Turing
-import FittingUtils: TuringFit, fit_model, FitResult, _component_func, inverse_sigmas
-import FittingUtils: ParameterScaling, scaled, unscaled, flatten_priors, init_point
+using BayesFitting, Turing
+import BayesFitting: TuringFit, fit_model, FitResult, _component_func, inverse_sigmas
+import BayesFitting: ParameterScaling, scaled, unscaled, flatten_priors, init_point
 
 using ComponentArrays
 using Distributions

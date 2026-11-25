@@ -1,4 +1,4 @@
-name = "FittingUtils"
+name = "BayesFitting"
 uuid = "05fb8ae4-0a1d-428f-a5a0-40f234e78f93"
 version = "0.1.0"
 authors = ["Jan Kuhfeld <jankuhfeld@plasma-matters.nl> and contributors"]
@@ -20,9 +20,9 @@ NonlinearSolve = "8913a72c-1f9b-4ce2-8d82-65094dcecaec"
 Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
 
 [extensions]
-FittingUtilsAbstractGPsExt = "AbstractGPs"
-FittingUtilsNonlinearSolveExt = "NonlinearSolve"
-FittingUtilsTuringExt = "Turing"
+BayesFittingAbstractGPsExt = "AbstractGPs"
+BayesFittingNonlinearSolveExt = "NonlinearSolve"
+BayesFittingTuringExt = "Turing"
 
 [compat]
 AbstractGPs = "0.5.24"

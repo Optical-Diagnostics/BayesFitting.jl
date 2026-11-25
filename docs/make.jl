@@ -1,14 +1,14 @@
-using FittingUtils
+using BayesFitting
 using Documenter
 
-DocMeta.setdocmeta!(FittingUtils, :DocTestSetup, :(using FittingUtils); recursive=true)
+DocMeta.setdocmeta!(BayesFitting, :DocTestSetup, :(using BayesFitting); recursive=true)
 
 makedocs(;
-    modules=[FittingUtils],
+    modules=[BayesFitting],
     authors="Jan Kuhfeld <jankuhfeld@plasma-matters.nl> and contributors",
-    sitename="FittingUtils.jl",
+    sitename="BayesFitting.jl",
     format=Documenter.HTML(;
-        canonical="https://optical-diagnostics.github.io/FittingUtils.jl",
+        canonical="https://optical-diagnostics.github.io/BayesFitting.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -18,6 +18,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/Optical-Diagnostics/FittingUtils.jl",
+    repo="github.com/Optical-Diagnostics/BayesFitting.jl",
     devbranch="main",
 )

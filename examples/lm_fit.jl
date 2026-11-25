@@ -1,6 +1,6 @@
 # Run with the examples environment: julia --project=examples examples/lm_fit.jl
 
-using FittingUtils, NonlinearSolve, ComponentArrays, Distributions
+using BayesFitting, NonlinearSolve, ComponentArrays, Distributions
 
 model(x, θ) = @. θ.ampl * exp(-x^2 / (2 * θ.width^2)) + θ.bg
 x = range(-3, 3, length = 200)

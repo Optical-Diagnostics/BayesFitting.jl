@@ -1,4 +1,4 @@
-module FittingUtils
+module BayesFitting
 
 using Statistics
 import StatsAPI

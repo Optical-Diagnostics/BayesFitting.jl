@@ -1,8 +1,8 @@
 ```@meta
-CurrentModule = FittingUtils
+CurrentModule = BayesFitting
 ```
 
-# FittingUtils
+# BayesFitting
 
 Parameter fitting with priors. [`fit_model`](@ref) fits `model(input, θ)` to
 data by least squares ([`LevenbergMarquardtFit`](@ref), with
@@ -25,7 +25,7 @@ coordinate, optionally GP-filtered with [`GaussianDrift`](@ref)
 ## Example
 
 ```julia
-using FittingUtils, NonlinearSolve, ComponentArrays, Distributions
+using BayesFitting, NonlinearSolve, ComponentArrays, Distributions
 
 model(x, θ) = @. θ.ampl * exp(-x^2 / (2 * θ.width^2)) + θ.bg
 x = range(-3, 3, length = 200)
@@ -49,5 +49,5 @@ mc = fit_model(model, x, data, priors, TuringFit(); init = fr, progress = false)
 ```
 
 ```@autodocs
-Modules = [FittingUtils]
+Modules = [BayesFitting]
 ```

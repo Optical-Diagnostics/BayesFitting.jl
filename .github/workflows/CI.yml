@@ -67,6 +67,6 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using FittingUtils
-          DocMeta.setdocmeta!(FittingUtils, :DocTestSetup, :(using FittingUtils); recursive=true)
-          doctest(FittingUtils)
+          using BayesFitting
+          DocMeta.setdocmeta!(BayesFitting, :DocTestSetup, :(using BayesFitting); recursive=true)
+          doctest(BayesFitting)

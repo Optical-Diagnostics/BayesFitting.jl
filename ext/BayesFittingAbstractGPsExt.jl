@@ -1,8 +1,8 @@
-module FittingUtilsAbstractGPsExt
+module BayesFittingAbstractGPsExt
 
-using FittingUtils, AbstractGPs
+using BayesFitting, AbstractGPs
 using Statistics
-import FittingUtils: GaussianDrift, init_drift, drift_predict, drift_update!
+import BayesFitting: GaussianDrift, init_drift, drift_predict, drift_update!
 
 # The posterior is rebuilt from the window on each predict.
 mutable struct ScalarState{F}
@@ -50,19 +50,19 @@ end
 _states(cfg, d) = ScalarState(cfg, mean(d), std(d))
 _states(cfg, a::AbstractArray) = map(x -> _states(cfg, x), a)
 
-function FittingUtils.init_drift(drift::GaussianDrift, keys, priors)
+function BayesFitting.init_drift(drift::GaussianDrift, keys, priors)
     comps = Dict{Symbol, Any}(k => _states(drift, priors[k]) for k in keys)
     return GPDriftState(drift, comps)
 end
 
-function FittingUtils.drift_predict(st::GPDriftState, key::Symbol, t)
+function BayesFitting.drift_predict(st::GPDriftState, key::Symbol, t)
     c = st.components[key]
     c isa ScalarState && return _predict(c, t)
     res = map(s -> _predict(s, t), c)
     return first.(res), last.(res)
 end
 
-function FittingUtils.drift_update!(st::GPDriftState, key::Symbol, t, μ, σ)
+function BayesFitting.drift_update!(st::GPDriftState, key::Symbol, t, μ, σ)
     c = st.components[key]
     if c isa ScalarState
         _update!(c, st.config, t, μ, σ)

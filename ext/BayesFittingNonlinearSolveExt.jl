@@ -1,5 +1,5 @@
-module FittingUtilsNonlinearSolveExt
-using FittingUtils, NonlinearSolve
+module BayesFittingNonlinearSolveExt
+using BayesFitting, NonlinearSolve
 
 using Distributions
 using ComponentArrays
@@ -7,8 +7,8 @@ using ComponentArrays
 using FiniteDiff, ForwardDiff, LinearAlgebra
 using ForwardDiff: DiffResults
 
-import FittingUtils: LevenbergMarquardtFit, fit_model, FitResult, inverse_sigmas
-import FittingUtils: ParameterScaling, scaled, unscaled, unscaled_cov, flatten_priors, init_point
+import BayesFitting: LevenbergMarquardtFit, fit_model, FitResult, inverse_sigmas
+import BayesFitting: ParameterScaling, scaled, unscaled, unscaled_cov, flatten_priors, init_point
 
 
 prior_residual(d, x) = error("Regularization term not defined for prior distribution: $(typeof(d))")
@@ -284,7 +284,7 @@ function fit_model(
     bounded = any(isfinite, lo) || any(isfinite, hi)
     # The covariance is that of the objective without the walls, at the
     # estimate.
-    z_at_estimate = bounded ? FittingUtils._scaled.(θ, ps.μ, ps.σ) : sol.u
+    z_at_estimate = bounded ? BayesFitting._scaled.(θ, ps.μ, ps.σ) : sol.u
     rawf = if bounded
         w === nothing ? unweighted_residual(model, input, data, params, ps; walls = false) :
             weighted_residual(model, input, data, params, w, ps; walls = false)
